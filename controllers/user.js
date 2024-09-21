@@ -3,7 +3,7 @@ const userModel = require('../model/user.js');
 const getUsersList = async(req, res) => {
     try {
 
-        const users = await userModel.find();
+        const users = await userModel.find({}, {password: 0});
         return res.status(201).json({
             msg: 'success',
             payload: {
