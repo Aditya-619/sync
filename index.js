@@ -21,23 +21,23 @@ async function main() {
 //   res.status(500).send("Something went wrong");
 // })
 
-// const allUsers = [
-//   {
-//     username: "John@gmail.com",
-//     password: "1234",
-//     name: "John Doe",
-//   },
-//   {
-//     username: "Jane@gmail.com",
-//     password: "5678",
-//     name: "Jane Doe",
-//   },
-//   {
-//     username: "Alice@gmail.com",
-//     password: "34567",
-//     name: "Alice Wu",
-//   },
-// ];
+const allUsers = [
+  {
+    username: "John@gmail.com",
+    password: "1234",
+    name: "John Doe",
+  },
+  {
+    username: "Jane@gmail.com",
+    password: "5678",
+    name: "Jane Doe",
+  },
+  {
+    username: "Alice@gmail.com",
+    password: "34567",
+    name: "Alice Wu",
+  },
+];
 
 app.use(express.json());
 
@@ -54,11 +54,11 @@ const userExists = (username, password) => {
 app.post("/signup", async (req, res) => {
   try {
     const { name, username, password } = req.body;
-    const isUserExist = await UserModel.findOne({username});
-    if(isUserExist) {
+    const isUserExist = await UserModel.findOne({ username });
+    if (isUserExist) {
       res.status(404).json({
         status: 0,
-        msg: 'user already exists'
+        msg: "user already exists",
       });
       return;
     }
@@ -68,11 +68,19 @@ app.post("/signup", async (req, res) => {
       password: password,
     });
     user.save();
-    const token = jwt.sign({ username: username }, process.env.JWT_SECRET);
+
+    const token = jwt.sign(
+      {
+        username: username,
+        password: password,
+      },
+      process.env.JWT_SECRET
+    );
+
     return res.json({
       status: 0,
       token,
-      msg: 'user created'
+      msg: "user created",
     });
   } catch (error) {
     console.log(error);
@@ -82,7 +90,7 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-app.get("/users", (req, res) => {
+app.get("/users", async (req, res) => {
   try {
     // const token = req.headers.authorization;
     // const decoded = jwt.verify(token, jwtPassword);
@@ -104,10 +112,14 @@ app.get("/users", (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     const username = decoded.username;
+    const password = decoded.password;
     console.log("Decoded username:", username);
+    console.log("Decoded password:", password);
+
+    const users = await UserModel.find();
 
     res.json({
-      users: allUsers,
+      users: users,
     });
   } catch (error) {
     console.log(error);
